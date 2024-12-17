@@ -1,0 +1,86 @@
+{
+  "url": "/",
+  "modules": [
+    {
+      "type": "navbar",
+      "selector": "#navbar",
+      "elements": [
+        {
+          "type": "link",
+          "selector": ".navbar-brand",
+          "text": "cypress.io"
+        },
+        {
+          "type": "link",
+          "selector": ".navbar-nav > li > a",
+          "text": "Commands "
+        },
+        {
+          "type": "link",
+          "selector": ".navbar-nav > li > a",
+          "text": "Utilities"
+        },
+        {
+          "type": "link",
+          "selector": ".navbar-nav > li > a",
+          "text": "Cypress API"
+        },
+        {
+          "type": "link",
+          "selector": ".navbar-nav > li > a",
+          "text": "Commands"
+        },
+        {
+          "type": "link",
+          "selector": ".navbar-nav > li > a",
+          "text": "GitHub"
+        }
+      ]
+    },
+    {
+      "type": "list",
+      "elements": [
+        {
+          "type": "listitem",
+          "selector": ".home-list > li > a",
+          "text": "Querying"
+        },
+        {
+          "type": "listitem",
+          "selector": ".home-list > li > ul > li > a",
+          "text": "get"
+        },
+        {
+          "type": "listitem",
+          "selector": ".home-list > li > ul > li > a",
+          "text": "contains"
+        },
+        {
+          "type": "listitem",
+          "selector": ".home-list > li > ul > li > a",
+          "text": "within"
+        },
+        {
+          "type": "listitem",
+          "selector": ".home-list > li > ul > li > a",
+          "text": "root"
+        }
+      ]
+    },
+    {
+      "type": "banner",
+      "elements": [
+        {
+          "type": "element",
+          "selector": "#utilities > h2",
+          "text": "Commands"
+        },
+        {
+          "type": "element",
+          "selector": "#utilities > p",
+          "text": "Commands drive your tests in the browser like a real user would. They let you perform actions like typing, clicking, xhr requests, and can also assert things like \"my button should be disabled\"."
+        }
+      ]
+    }
+  ]
+}

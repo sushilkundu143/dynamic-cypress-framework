@@ -1,0 +1,20 @@
+{
+  "url": "/",
+  "modules": [
+    {
+      "type": "banner",
+      "elements": [
+        {
+          "type": "element",
+          "selector": "div h1",
+          "text": "Example Domain"
+        },
+        {
+          "type": "element",
+          "selector": "div p",
+          "text": "This domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission."
+        }
+      ]
+    }
+  ]
+}

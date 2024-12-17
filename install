@@ -1,0 +1,118 @@
+#!/bin/bash 
+
+# This script downloads and installs lc2 into ${HOME}/.lc2/bin
+# It is meant to be installed via curl | bash or similar
+
+# From Outside AWS:  curl -s https://artifactory.tlcinternal.com/artifactory/lc2/install | bash 
+# From AWS: aws s3 cp --region us-west-2 s3://lc-devops-us-west-2/__artifacts/lc2/install - | bash 
+
+#
+
+LC2_CHANNEL=${LC2_CHANNEL-"stable"}
+LC2_BIN_DIR=${HOME}/.lc2/bin
+LC2_INIT=${LC2_BIN_DIR}/.lc2-init.sh
+
+TEMP_DIR=/tmp/install-lc2-temp-$$
+
+fail() {
+  echo ERROR: LC2 install failed
+  exit 1
+}
+install_from_s3() {
+  echo "Installing lc2 from ${LC2_CHANNEL} channel via s3..."
+  cd ${TEMP_DIR}
+  
+  AWS_REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/[a-z]$//')
+  ARTIFACTS_BUCKET_URL=s3://lc-devops-${AWS_REGION}/__artifacts
+  aws s3 --region ${AWS_REGION} cp ${ARTIFACTS_BUCKET_URL}/lc2/channel/${LC2_CHANNEL}/${LC2_CHANNEL}.properties ${TEMP_DIR}/lc2.properties || fail 
+
+  LC2_PATH=$(cat ${TEMP_DIR}/lc2.properties | grep 'path=' | awk -F= '{ print $2 }')
+
+  aws s3 --region ${AWS_REGION} cp ${ARTIFACTS_BUCKET_URL}/${LC2_PATH} ${TEMP_DIR}/lc2  || fail
+
+  mkdir -p ${LC2_BIN_DIR}
+  mv ${TEMP_DIR}/lc2 ${LC2_BIN_DIR}/lc2
+  chmod +x ${LC2_BIN_DIR}/lc2
+
+}
+
+install_from_artifactory() {
+  echo "Installing lc2 from ${LC2_CHANNEL} channel via artifactory..."
+  LC2_PATH=$(curl -u "$1:$2" https://artifactory.tlcinternal.com/artifactory/lc2/channel/${LC2_CHANNEL}/${LC2_CHANNEL}.properties --silent | grep '^path' | awk -F= '{ print $2 }')
+  curl --silent -u "$1:$2" -o ${TEMP_DIR}/lc2 https://artifactory.tlcinternal.com/artifactory/${LC2_PATH} || fail
+  mkdir -p ${LC2_BIN_DIR}
+  mv ${TEMP_DIR}/lc2 ${LC2_BIN_DIR}/lc2
+  chmod +x ${LC2_BIN_DIR}/lc2
+}
+
+get_credentials() {
+  if [ -z "${ARTIFACTORY_USER}" ] || [ -z "${ARTIFACTORY_PASSWORD}" ]; then
+    echo "Enter your credentials to connect to artifactory."
+    printf "Username: "
+    read ARTIFACTORY_USER
+    stty -echo
+    printf "Password: "
+    read ARTIFACTORY_PASSWORD
+    stty echo
+    echo
+  fi
+}
+
+is_ec2() {
+  if [ $(uname) == "Darwin" ]; then
+    RUNNING_IN_EC2="false"
+  elif [ -f /sys/devices/virtual/dmi/id/board_asset_tag ] && $(cat /sys/devices/virtual/dmi/id/board_asset_tag|grep -q "^i-") ; then
+    RUNNING_IN_EC2="true"
+  elif [ -f /sys/hypervisor/uuid ] && [ `head -c 3 /sys/hypervisor/uuid` == ec2 ]; then
+    RUNNING_IN_EC2="true"
+  elif $(curl -s -m 1 http://169.254.169.254/latest/dynamic/instance-identity/document|grep -q instanceId) ; then
+    RUNNING_IN_EC2="true"
+  fi
+}
+
+mkdir -p ${TEMP_DIR}
+
+if [ -n "${ARTIFACTORY_USER}" ] && [ -n "${ARTIFACTORY_PASSWORD}" ]; then
+  install_from_artifactory $ARTIFACTORY_USER "$ARTIFACTORY_PASSWORD"
+else
+  # if RUNNING_IN_EC2 is not already setup, verify running in EC2
+  if [ -z ${RUNNING_IN_EC2+x} ]; then
+    is_ec2
+  fi
+  if [ "$RUNNING_IN_EC2" == "true" ]; then
+    install_from_s3
+  else
+    get_credentials
+    install_from_artifactory $ARTIFACTORY_USER "$ARTIFACTORY_PASSWORD"
+  fi
+fi
+
+
+cat <<EOF >${LC2_INIT}
+#!/bin/bash
+
+export PATH=\${PATH}:${LC2_BIN_DIR}
+
+EOF
+
+chmod +x ${LC2_BIN_DIR}/lc2 || exit 1
+chmod +x ${LC2_INIT} || exit 1
+
+cd
+
+rm -rf ${TEMP_DIR}
+
+if ! $(grep -q lc2-init ${HOME}/.bash_profile) ; then
+
+cat <<EOF >>${HOME}/.bash_profile
+
+[ -f ${LC2_INIT} ] && source ${LC2_INIT}
+
+EOF
+echo "You will need to start a new shell or:"
+echo
+echo "   . ${LC2_INIT}"
+fi
+
+rm -rf ${TEMP_DIR}
+

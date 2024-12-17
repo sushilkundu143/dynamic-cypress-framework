@@ -1,0 +1,56 @@
+{
+  "url": "/utilities",
+  "modules": [
+    {
+      "type": "navbar",
+      "selector": "#navbar",
+      "elements": [
+        {
+          "type": "link",
+          "selector": ".navbar-brand",
+          "text": "cypress.io"
+        },
+        {
+          "type": "link",
+          "selector": ".navbar-nav > li > a",
+          "text": "Commands "
+        },
+        {
+          "type": "link",
+          "selector": ".navbar-nav > li > a",
+          "text": "Utilities"
+        },
+        {
+          "type": "link",
+          "selector": ".navbar-nav > li > a",
+          "text": "Cypress API"
+        },
+        {
+          "type": "link",
+          "selector": ".navbar-nav > li > a",
+          "text": "Commands"
+        },
+        {
+          "type": "link",
+          "selector": ".navbar-nav > li > a",
+          "text": "GitHub"
+        }
+      ]
+    },
+    {
+      "type": "banner",
+      "elements": [
+        {
+          "type": "element",
+          "selector": "container > h1",
+          "text": "Utilities"
+        },
+        {
+          "type": "element",
+          "selector": "div > p",
+          "text": "Examples of the use of methods from other commonly used libraries in Cypress, for a full reference of commands, go to <a href=\"https://on.cypress.io/_\" target=\"_blank\">docs.cypress.io</a>"
+        }
+      ]
+    }
+  ]
+}
